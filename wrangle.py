@@ -16,86 +16,69 @@ from sklearn.preprocessing import (
 from sklearn.metrics import mean_squared_error, r2_score
 
 
-def get_zillow(user=user, password=password, host=host):
-    """
-    This function acquires data from a SQL database of 2017 Zillow properties and caches it locally.
-
-    :param user: The username for accessing the MySQL database
-    :param password: The password is unique per user saved in env
-    :param host: The host parameter is the address of the server where the Zillow database is hosted
-    :return: The function `get_zillow` is returning a pandas DataFrame containing information on single family residential properties
-    """
-    # name of cached csv
-    filename = "zillow.csv"
-    # if cached data exist
-    if os.path.isfile(filename):
-        # read data from cached csv
-        df = pd.read_csv(filename)
-        # Print size
-        print(f"Total rows: {df.shape[0]}")
-        print(f"Total columns: {df.shape[1]}")
-    # wrangle from sql db if not cached
-    else:
-        # read sql query into df
-        # 261 is single family residential id
-        df = pd.read_sql(
-            """select * 
-                            from properties_2017 
-                            left join predictions_2017 using(parcelid) 
-                            where propertylandusetypeid in (261,279)""",
-            f"mysql+pymysql://{user}:{password}@{host}/zillow",
-        )
-        # filter to just 2017 transactions
-        df = df[df["transactiondate"].str.startswith("2017", na=False)]
-        # cache data locally
-        df.to_csv(filename, index=False)
-        # print total rows and columns
-        print(f"Total rows: {df.shape[0]}")
-        print(f"Total columns: {df.shape[1]}")
-    return df
-
-
-def check_columns(df_telco):
+def check_columns(df, reports=False, graphs=False):
     """
     This function takes a pandas dataframe as input and returns
     a dataframe with information about each column in the dataframe. For
     each column, it returns the column name, the number of
     unique values in the column, the unique values themselves,
     the number of null values in the column, the proportion of null values,
-    and the data type of the column. The resulting dataframe is sorted by the
+    the data type of the column, and the range of the column if it is float or int. The resulting dataframe is sorted by the
     'Number of Unique Values' column in ascending order.
 
     Args:
-    - df_telco: pandas dataframe
+    - df: pandas dataframe
 
     Returns:
     - pandas dataframe
     """
+    print(f"Total rows: {df.shape[0]}")
+    print(f"Total columns: {df.shape[1]}")
+    if reports == True:
+        df.describe().round(2)
+    if graphs == True:
+        df.hist(bins=20, figsize=(10, 10))
+        plt.show()
     data = []
     # Loop through each column in the dataframe
-    for column in df_telco.columns:
+    for column in df.columns:
         # Append the column name, number of unique values, unique values, number of null values, proportion of null values, and data type to the data list
-        data.append(
-            [
-                column,
-                df_telco[column].nunique(),
-                df_telco[column].unique(),
-                df_telco[column].isna().sum(),
-                df_telco[column].isna().mean(),
-                df_telco[column].dtype,
-            ]
-        )
-    # Create a pandas dataframe from the data list, with column names 'Column Name', 'Number of Unique Values', 'Unique Values', 'Number of Null Values', 'Proportion of Null Values', and 'dtype'
+        if df[column].dtype in ["float64", "int64"]:
+            data.append(
+                [
+                    column,
+                    df[column].dtype,
+                    df[column].nunique(),
+                    df[column].isna().sum(),
+                    df[column].isna().mean().round(5),
+                    df[column].unique(),
+                    df[column].describe()[["min", "max", "mean"]].values,
+                ]
+            )
+        else:
+            data.append(
+                [
+                    column,
+                    df[column].dtype,
+                    df[column].nunique(),
+                    df[column].isna().sum(),
+                    df[column].isna().mean().round(5),
+                    df[column].unique(),
+                    None,
+                ]
+            )
+    # Create a pandas dataframe from the data list, with column names 'Column Name', 'Number of Unique Values', 'Unique Values', 'Number of Null Values', 'Proportion of Null Values', 'dtype', and 'Range' (if column is float or int)
     # Sort the resulting dataframe by the 'Number of Unique Values' column in ascending order
     return pd.DataFrame(
         data,
         columns=[
-            "Column Name",
-            "Number of Unique Values",
-            "Unique Values",
-            "Number of Null Values",
-            "Proportion of Null Values",
+            "col_name",
             "dtype",
+            "num_unique",
+            "num_null",
+            "pct_null",
+            "unique_values",
+            "range (min, max, mean)",
         ],
     )
 
