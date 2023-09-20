@@ -310,46 +310,6 @@ def plot_rfc_scores(rfc_scores):
     plt.show()
 
 
-def merge_and_filter_dataframes():
-    """
-    Merges the dataframes and filters the data to only show models with a difference less than 0.1.
-    Sorts the data by 'acc_val'.
-
-    Parameters:
-    None
-
-    Returns:
-    pandas.DataFrame: A dataframe containing the merged and filtered data.
-    """
-    # Merge the dataframes
-    rfc_scores = pd.concat(
-        [
-            rfc_scores_robust_3,
-            rfc_scores_mm_3,
-            rfc_scores_standard_3,
-            rfc_scores_robust_4,
-            rfc_scores_mm_4,
-            rfc_scores_robust_5,
-            rfc_scores_mm_5,
-            rfc_scores_standard_5,
-        ]
-    )
-
-    # Round the accuracy scores to 3 decimals
-    rfc_scores["acc_val"] = [round(float(x), 3) for x in rfc_scores["acc_val"]]
-    rfc_scores["acc_train"] = [round(float(x), 3) for x in rfc_scores["acc_train"]]
-    rfc_scores["acc_diff"] = [round(float(x), 3) for x in rfc_scores["acc_diff"]]
-
-    # Filter the data to only show models with a difference less than 0.1
-    rfc_scores_10 = rfc_scores[rfc_scores["acc_diff"] < 0.1]
-
-    # Sort the data by 'acc_val'
-    rfc_scores_10_sorted = rfc_scores_10.sort_values(by="acc_val", ascending=False)
-
-    # Return the merged and filtered dataframe
-    return rfc_scores_10_sorted
-
-
 def cluster_and_model_test(
     X_train,
     y_train,
