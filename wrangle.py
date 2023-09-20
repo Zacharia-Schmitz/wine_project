@@ -87,27 +87,18 @@ def check_columns(df, reports=False, graphs=False):
 
 def load_wine_data():
     """
-    Loads the wine data from wine.csv if it exists, otherwise imports the two files and creates wine.csv.
+    Loads the wine data from the two csvs if they exist, otherwise imports the two files and creates wine.csv.
 
     Returns:
     df (pandas.DataFrame): The wine data as a DataFrame.
     """
-    # Check if wine.csv exists
-    if os.path.exists("wine.csv"):
-        # If it exists, open the file as a DataFrame
-        df = pd.read_csv("wine.csv")
-    else:
-        # If it doesn't exist, import the two files and create wine.csv
-        red = pd.read_csv("winequality-red.csv")
-        white = pd.read_csv("winequality-white.csv")
-        # Create a seperator to differentiate
-        red["is_red"] = 1
-        white["is_red"] = 0
-        # Merge them and cache
-        df = pd.concat([red, white], axis=0)
-        df.to_csv("wine.csv", index=False)
-        df = pd.read_csv("wine.csv")
-
+    red = pd.read_csv("winequality_red.csv")
+    white = pd.read_csv("winequality_white.csv")
+    # Create a seperator to differentiate
+    red["is_red"] = 1
+    white["is_red"] = 0
+    # Merge them and cache
+    df = pd.concat([red, white], axis=0)
     return df
 
 
