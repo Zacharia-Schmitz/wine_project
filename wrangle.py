@@ -161,7 +161,7 @@ def plot_quality_vs_feature(df, feature):
     """
     # Loop through each column in the DataFrame
     for col in df.columns:
-        if col != "quality" and col != "is_red":
+        if col not in ["quality_binned", "quality", "is_red"]:
             try:
                 # Create a line plot of the feature vs quality
                 plt.figure(figsize=(15, 7))
