@@ -116,7 +116,7 @@ def box_plotter(df):
     Generates a box plot for all columns in a dataframe using matplotlib.
     """
     for col in df.columns:
-        if col != "quality":
+        if col != "quality" and col != "is_red":
             try:
                 plt.figure(figsize=(12, 1))
                 plt.boxplot(df[col], vert=False)
@@ -170,7 +170,7 @@ def plot_quality_vs_feature(df, feature):
     """
     # Loop through each column in the DataFrame
     for col in df.columns:
-        if col != "quality":
+        if col != "quality" and col != "is_red":
             # Create a line plot of the feature vs quality
             plt.figure(figsize=(15, 7))
             sns.lineplot(data=df, x=feature, y=col)
@@ -204,7 +204,7 @@ def test_normality_and_variance(df, target="quality"):
 
     # Test for normality and equal variance
     for col in df.columns:
-        if col != target:
+        if col != "quality" and col != "is_red":
             stat, p = shapiro(df[col])
             print(f"{col}: {'Normal' if p > 0.05 else 'Not normal'}")
 
@@ -367,8 +367,8 @@ def cluster_and_model_test(
     model="all",
     n_estimators=100,
     max_depth=6,
-    min_samples_split=5,
-    min_samples_leaf=1,
+    min_samples_split=2,
+    min_samples_leaf=2,
 ):
     """
     Clusters the data using KMeans with the given number of clusters, adds the cluster labels to the original data,
@@ -455,9 +455,6 @@ def cluster_and_model_test(
         models = [DecisionTreeClassifier()]
         scores = dict()
 
-    # Calculate the baseline accuracy
-    baseline_acc = accuracy_score(y_train, [y_train[0].mean()] * len(y_train))
-
     for m in models:
         m.fit(X_train_clustered_df, y_train)
         y_train_pred = m.predict(X_train_clustered_df)
@@ -482,9 +479,6 @@ def cluster_and_model_test(
             "supp_train": report_train["weighted avg"]["support"],
             "supp_test": report_validate["weighted avg"]["support"],
         }
-
-    # Add the baseline accuracy to the scores dictionary
-    scores["Baseline"] = {"acc_train": baseline_acc, "acc_validate": baseline_acc}
 
     scores_df = pd.DataFrame(scores).transpose()
     scores_df.index.name = "Model"
@@ -594,13 +588,45 @@ def hyper_tuning(
 
     return scores_df
 
-def rfc_results(X_train, y_train, X_validate, y_validate, scaler_names, n_clusters_list):
+
+def rfc_results(
+    X_train, y_train, X_validate, y_validate, scaler_names, n_clusters_list
+):
     results = []
     for scaler_name in scaler_names:
         for n_clusters in n_clusters_list:
-            scores = w.hyper_tuning(X_train, y_train, X_validate, y_validate, scaler_name=scaler_name, n_clusters=n_clusters)
+            scores = w.hyper_tuning(
+                X_train,
+                y_train,
+                X_validate,
+                y_validate,
+                scaler_name=scaler_name,
+                n_clusters=n_clusters,
+            )
             scores["scaler_name"] = scaler_name
             scores["n_clusters"] = n_clusters
             results.append(scores)
     df = pd.DataFrame(results)
     return df
+
+
+def calculate_baseline_accuracy(y_train, y_validate):
+    """
+    Calculates the baseline accuracy for a classification problem.
+
+    Parameters:
+    y_train (pandas.Series): The training target variable.
+    y_validate (pandas.Series): The validation target variable.
+
+    Returns:
+    None
+    """
+    # Calculate the baseline accuracy
+    baseline_acc = y_train.mean()
+
+    # Calculate the accuracy of the baseline prediction on the validation set
+    baseline_pred = [y_train.mode()[0]] * len(y_validate)
+    baseline_acc = accuracy_score(y_validate, baseline_pred)
+
+    # Print the baseline accuracy on the validation set
+    print(f"Baseline accuracy on validation set: {baseline_acc:.4f}")
