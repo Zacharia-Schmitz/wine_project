@@ -162,22 +162,24 @@ def plot_quality_vs_feature(df, feature):
     # Loop through each column in the DataFrame
     for col in df.columns:
         if col != "quality" and col != "is_red":
-            # Create a line plot of the feature vs quality
-            plt.figure(figsize=(15, 7))
-            sns.lineplot(data=df, x=feature, y=col)
+            try:
+                # Create a line plot of the feature vs quality
+                plt.figure(figsize=(15, 7))
+                sns.lineplot(data=df, x=feature, y=col)
 
-            # Test for significant difference between quality groups using Mann-Whitney U test
-            group1 = df[df[feature] == 3][col]
-            group2 = df[df[feature] == 7][col]
-            stat, p = mannwhitneyu(group1, group2)
+                # Test for significant difference between quality groups using Mann-Whitney U test
+                group1 = df[df["quality_binned"] == "lower"][col]
+                group2 = df[df["quality_binned"] == "upper"][col]
+                stat, p = mannwhitneyu(group1, group2)
 
-            # Add the test result to the plot title
-            plt.title(
-                f"{col} vs {feature} (Mann-Whitney U test: U={stat:.4f}, p={p:.4f})",
-                fontsize=16,
-            )
-
-            plt.show()
+                # Add the test result to the plot title
+                plt.title(
+                    f"{col} vs {feature} (Mann-Whitney U test: U={stat:.4f}, p={p:.4f})",
+                    fontsize=16,
+                )
+                plt.show()
+            except:
+                continue
 
 
 def test_normality_and_variance(df, target="quality"):
