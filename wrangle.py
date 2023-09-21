@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import wrangle as w
 from scipy.stats import shapiro, levene, mannwhitneyu
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
 from sklearn.cluster import KMeans
