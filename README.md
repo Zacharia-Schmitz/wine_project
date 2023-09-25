@@ -1,3 +1,5 @@
+[Presentation Link](https://www.canva.com/design/DAFt-C3lqkg/ksw7j4p6XHH49NVsme6OSA/view?utm_content=DAFt-C3lqkg&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink)
+
 ## Predicting Wine Quality for California Wine Institute
 
 ### Project goals
